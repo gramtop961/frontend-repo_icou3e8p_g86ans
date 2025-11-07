@@ -1,22 +1,58 @@
-import React from 'react';
-import Hero from './components/Hero';
-import WeeklyMission from './components/WeeklyMission';
-import ProgressMap from './components/ProgressMap';
-import WhyItWorks from './components/WhyItWorks';
+import React, { useMemo, useState } from 'react';
+import Header from './components/Header';
+import Categories from './components/Categories';
+import ProductGrid from './components/ProductGrid';
+import CartDrawer from './components/CartDrawer';
 
 function App() {
-  return (
-    <div className="min-h-screen bg-neutral-950 text-gray-100">
-      <div className="mx-auto max-w-7xl space-y-16 px-4 py-8 sm:px-6 lg:px-8">
-        <Hero />
-        <WeeklyMission />
-        <ProgressMap />
-        <WhyItWorks />
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('All');
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState([]);
 
-        <footer className="border-t border-white/10 py-8 text-center text-sm text-white/60">
-          Built for Experiment Labs — a vision of applied learning where work unlocks access.
-        </footer>
-      </div>
+  const handleAdd = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === product.id);
+      if (existing) {
+        return prev.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i));
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+  };
+
+  const handleRemove = (id) => setCart((prev) => prev.filter((i) => i.id !== id));
+
+  const cartCount = useMemo(() => cart.reduce((s, i) => s + i.qty, 0), [cart]);
+
+  const handleCheckout = () => {
+    alert('This is a demo checkout. Add your backend to process orders.');
+  };
+
+  return (
+    <div className="min-h-screen bg-zinc-50">
+      <Header
+        query={query}
+        onSearchChange={setQuery}
+        cartCount={cartCount}
+        onOpenCart={() => setCartOpen(true)}
+      />
+
+      <main>
+        <Categories active={category} onSelect={setCategory} />
+        <ProductGrid query={query} category={category} onAdd={handleAdd} />
+      </main>
+
+      <footer className="border-t border-zinc-200 py-8 text-center text-sm text-zinc-500">
+        Built as a simple product app demo. Refine categories, add filters, or wire real checkout next.
+      </footer>
+
+      <CartDrawer
+        open={cartOpen}
+        items={cart}
+        onClose={() => setCartOpen(false)}
+        onRemove={handleRemove}
+        onCheckout={handleCheckout}
+      />
     </div>
   );
 }
